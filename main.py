@@ -78,37 +78,30 @@ def process(filename):
 	print(digit)
 	return digit[0]
 
-if __name__ == "__main__":
-	input_image = '1-10.jpg'
+# if __name__ == "__main__":
+def main(image_name):
+	input_image = image_name
 	image = cv2.imread(input_image)
 	img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
-	ret, thresh = cv2.threshold(img, 150, 255, cv2.THRESH_BINARY_INV) 
-	# cv2.imshow('Binary Threshold Inverted', thresh) 
+	ret, thresh = cv2.threshold(img, 150, 255, cv2.THRESH_BINARY_INV)
 	contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-	print("Number of Contours found = " + str(len(contours)))
-	for ctr in contours: 
-		# Get bounding box 
-		if cv2.contourArea(ctr) > 2000:
-			x, y, w, h = cv2.boundingRect(ctr) 
-			print(cv2.contourArea(ctr))
-			# Getting ROI 
-			roi = thresh[y:y+h, x:x+w]  
-			cv2.rectangle(image,(x,y),( x + w, y + h ),(0,255,0),2) 
-			sub_image = thresh[y - 20:y+h + 20, x - 20:x+w + 20]
-			#cv2.waitKey(0) 
-			if w > 15 and h > 15: 
-				# cv2.imshow('sub_image', sub_image)
-				cv2.imwrite('input.' + input_image.split('.')[-1], sub_image)
-				time.sleep(1)
-				digit = process('input.' + input_image.split('.')[-1])
-				cv2.putText(image, str(digit), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 2, cv2.LINE_AA)
+	digit = None
+
+	if len(contours) > 0:
+		c = max(contours, key = cv2.contourArea)
+		x,y,w,h = cv2.boundingRect(c)
+		cv2.rectangle(image,(x,y),( x + w, y + h ),(0,255,0),2)
+		sub_image = thresh[y - 20:y+h + 20, x - 20:x+w + 20]
+		cv2.imwrite('input.' + input_image.split('.')[-1], sub_image)
+		digit = process('input.' + input_image.split('.')[-1])
+		cv2.putText(image, str(digit), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 2, cv2.LINE_AA)
 
 	cv2.drawContours(image, contours, -1, (0, 255, 0), 3)
-	cv2.imshow('contours', image)
-	cv2.imwrite('output.' + input_image.split('.')[-1], image)
-	# process('6_1.png')
-	if cv2.waitKey(0) & 0xff == 27:  
-		cv2.destroyAllWindows()
+	# cv2.imshow('contours', image)
+	# cv2.imwrite('output.' + input_image.split('.')[-1], image)
+	# if cv2.waitKey(0) & 0xff == 27:  
+	# 	cv2.destroyAllWindows()
+	return digit
 	
 
 
